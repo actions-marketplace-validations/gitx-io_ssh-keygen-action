@@ -1,0 +1,43 @@
+name: 'SSH key generation'
+description: 'To generate a SSH key'
+inputs:
+  comment:
+    description: 'A comment to help you to identify the key, e.g. your email etc.'
+    required: false
+  encryption:
+    # dsa | ecdsa | ed25519 | rsa
+    description: 'Encryption type'
+    required: true
+    default: 'rsa'
+  bits:
+    description: 'Bits'
+    required: true
+    default: '4096'
+runs:
+  using: "composite"
+  steps:
+    - name: Generate the key
+      run: |
+        comment=${{ inputs.comment }}
+        [ -z $comment ] && comment="${GITHUB_REPOSITORY}-$(date +%s)"
+        echo $comment
+        encryption=${{ inputs.encryption }}
+        bits=${{ inputs.bits }}
+        ssh-keygen -t $encryption -b $bits -C $comment -f key -N ""
+      shell: bash
+    - name: Rename key files
+      run: |
+        mv key private_key.txt
+        mv key.pub public_key.txt
+      shell: bash
+    - name: Store the key files in the repo
+      run: |
+        # git commit if there's any change
+        if test -n "$(git status --porcelain 2>/dev/null)"; then
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .
+            git commit -m "Update a new key"
+            git push origin ${GITHUB_REF##*/}
+        fi
+      shell: bash
