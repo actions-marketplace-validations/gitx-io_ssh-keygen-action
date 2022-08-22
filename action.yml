@@ -1,5 +1,5 @@
 name: 'SSH key generation'
-description: 'To generate a SSH key'
+description: 'To generate an SSH key'
 inputs:
   comment:
     description: 'A comment to help you to identify the key, e.g. your email etc.'
